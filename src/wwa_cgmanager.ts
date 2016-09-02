@@ -10,6 +10,7 @@ module wwa_cgmanager {
         private _ctx: CanvasRenderingContext2D;
         private _ctxSub: CanvasRenderingContext2D;
         private _isLoaded: boolean = false;
+        private _imgFileData: string;
         private _fileName: string;
         private _loadCompleteCallBack: () => void;
         private _image: HTMLImageElement;
@@ -27,7 +28,7 @@ module wwa_cgmanager {
             this._image.addEventListener("error", () => {
                 throw new Error("Image Load Failed!!\nfile name:" + this._fileName); 
             });
-            this._image.src = this._fileName;
+            this._image.src = this._imgFileData;
             this._isLoaded = true;
         }
         
@@ -101,10 +102,11 @@ module wwa_cgmanager {
 
 
 
-        public constructor(ctx: CanvasRenderingContext2D, ctxSub: CanvasRenderingContext2D, fileName: string, loadCompleteCallBack: () => void) {
+        public constructor(ctx: CanvasRenderingContext2D, ctxSub: CanvasRenderingContext2D, fileName: string, imgFileData: string, loadCompleteCallBack: () => void) {
             this._ctx = ctx;
             this._ctxSub = ctxSub;
-            this._fileName = fileName;  
+            this._fileName = fileName;
+            this._imgFileData = imgFileData;
             this._loadCompleteCallBack = loadCompleteCallBack;
             this._load();
         } 

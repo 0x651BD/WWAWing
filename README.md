@@ -1,5 +1,5 @@
-# WWA Wing [![Build Status](https://travis-ci.org/WWAWing/WWAWing.svg?branch=master)](https://travis-ci.org/WWAWing/WWAWing)
-WWA( http://wwajp.com )のJavaScript実装です。
+# WWA Wing
+WWA( http://wwajp.com )のJavaScript実装です。このbranchにあるWWA Wingは画像ファイルをカスタムデータ属性から読み込むように仕様が変更されています。
 
 ## forkされる方へ
 - `.travis.yml` の取り扱いにご注意ください.

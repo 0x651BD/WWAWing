@@ -136,7 +136,7 @@ module wwa_main {
 
         private _loadHandler: (e) => void;
 
-        constructor(mapFileName: string, workerFileName: string, urlgateEnabled: boolean= false, audioDirectory: string = "") {
+        constructor(mapFileName: string, imgFileData: string, workerFileName: string, urlgateEnabled: boolean= false, audioDirectory: string = "") {
             try {
                 util.$id("version").textContent = "WWA Wing Ver." + Consts.VERSION_WWAJS;
             } catch (e) { }
@@ -181,14 +181,14 @@ module wwa_main {
                 this.initCSSRule();
                 this._setProgressBar(getProgress(0, 4, wwa_data.LoadStage.GAME_INIT) );
                 var cgFile = new Image();
-                cgFile.src = this._wwaData.mapCGName;
+                cgFile.src = imgFileData;
                 cgFile.addEventListener("error", (): void => {
                     alert("画像ファイル「" + this._wwaData.mapCGName + "」が見つかりませんでした。\n" +
                         "管理者の方へ: データがアップロードされているか、パーミッションを確かめてください。");
                 });
                 this._restartData = JSON.parse(JSON.stringify(this._wwaData));
 
-                var escapedFilename: string = this._wwaData.mapCGName.replace("(", "\\(").replace(")", "\\)");
+                var escapedFilename: string = imgFileData;
                 Array.prototype.forEach.call(util.$qsAll("div.item-cell"), (node: HTMLElement) => {
                     node.style.backgroundPosition = "-40px -80px";
                     node.style.backgroundImage = "url(" + escapedFilename + ")";
@@ -486,7 +486,7 @@ module wwa_main {
                     this, <HTMLDivElement>wwa_util.$id("wwa-wrapper"));
 
                 this._messageWindow = new wwa_message.MessageWindow(
-                    this, 50, 180, 340, 0, "", this._wwaData.mapCGName, false, true, util.$id("wwa-wrapper"));
+                    this, 50, 180, 340, 0, "", this._wwaData.mapCGName, imgFileData, false, true, util.$id("wwa-wrapper"));
                 this._monsterWindow = new wwa_message.MosterWindow(
                     this, new Coord(50, 180), 340, 60, false, util.$id("wwa-wrapper"), this._wwaData.mapCGName);
                 this._scoreWindow = new wwa_message.ScoreWindow(
@@ -517,7 +517,7 @@ module wwa_main {
                 */
                 
 
-                this._cgManager = new CGManager(ctx, ctxSub, this._wwaData.mapCGName, (): void => {
+                this._cgManager = new CGManager(ctx, ctxSub, this._wwaData.mapCGName, imgFileData, (): void => {
                     if (this._wwaData.systemMessage[wwa_data.SystemMessage2.LOAD_SE] === "ON") {
                         this._isLoadedSound = true;
                         this.setMessageQueue("ゲームを開始します。\n画面をクリックしてください。\n" +
@@ -621,14 +621,14 @@ module wwa_main {
                 try {
                     loader_start({
                         data: {
-                            fileName: mapFileName + "?date=" + t_start
+                            fileName: mapFileName
                         }
                     });
                 } catch (e) {
                     script.onload = function () {
                         loader_start({
                             data: {
-                                fileName: mapFileName + "?date=" + t_start
+                                fileName: mapFileName
                             }
                         });
                     }
@@ -636,7 +636,7 @@ module wwa_main {
             } else {
                 try {
                     var loadWorker: Worker = new Worker(workerFileName + "?date=" + t_start);
-                    loadWorker.postMessage({ "fileName": mapFileName +"?date=" + t_start });
+                    loadWorker.postMessage({ "fileName": mapFileName});
                     loadWorker.addEventListener("message", this._loadHandler);
                 } catch (e) {
                     alert("マップデータのロード時のエラーが発生しました。:\nWebWorkerの生成に失敗しました。" + e.message);
@@ -3538,13 +3538,14 @@ module wwa_main {
             util.$id("wwa-wrapper").getAttribute("data-wwa-title-img");
         wwa_inject_html.inject(<HTMLDivElement>util.$id("wwa-wrapper"),  titleImgName === null ? "cover.gif" : titleImgName );
         var mapFileName = util.$id("wwa-wrapper").getAttribute("data-wwa-mapdata");
+        var imgFileData = util.$id("wwa-wrapper").dataset["wwaImgdata"];
         var loaderFileName = util.$id("wwa-wrapper").getAttribute("data-wwa-loader");
         var audioDirectory = util.$id("wwa-wrapper").getAttribute("data-wwa-audio-dir");
         var urlgateEnabled = true;
         if (util.$id("wwa-wrapper").getAttribute("data-wwa-urlgate-enable").match(/^false$/i)) {
             urlgateEnabled = false;
         }
-        wwa = new WWA(mapFileName, loaderFileName, urlgateEnabled,audioDirectory);
+        wwa = new WWA(mapFileName, imgFileData, loaderFileName, urlgateEnabled,audioDirectory);
     }
 
 

@@ -615,13 +615,14 @@ module wwa_message {
             height: number,
             message: string,
             cgFileName: string,
+            imgFileData: string,
             isVisible: boolean,
             isYesno: boolean,
             parentElement: HTMLElement
             ) {
             var thisA = this;
 
-            var escapedFilename: string = cgFileName.replace("(", "\\(").replace(")", "\\)");
+            var escapedFilename: string = imgFileData;
             this._wwa = wwa;
             this._cgFileName = cgFileName;
             this._x = x;

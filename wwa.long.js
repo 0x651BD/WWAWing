@@ -1828,11 +1828,12 @@ var wwa_cgmanager;
 (function (wwa_cgmanager) {
     var Consts = wwa_data.WWAConsts;
     var CGManager = (function () {
-        function CGManager(ctx, ctxSub, fileName, loadCompleteCallBack) {
+        function CGManager(ctx, ctxSub, fileName, imgFileData, loadCompleteCallBack) {
             this._isLoaded = false;
             this._ctx = ctx;
             this._ctxSub = ctxSub;
             this._fileName = fileName;
+            this._imgFileData = imgFileData;
             this._loadCompleteCallBack = loadCompleteCallBack;
             this._load();
         }
@@ -1848,7 +1849,7 @@ var wwa_cgmanager;
             this._image.addEventListener("error", function () {
                 throw new Error("Image Load Failed!!\nfile name:" + _this._fileName);
             });
-            this._image.src = this._fileName;
+            this._image.src = this._imgFileData;
             this._isLoaded = true;
         };
         CGManager.prototype.drawCanvas = function (chipX, chipY, canvasX, canvasY, isSub) {
@@ -2504,9 +2505,9 @@ var wwa_message;
     })(wwa_message.Positioning || (wwa_message.Positioning = {}));
     var Positioning = wwa_message.Positioning;
     var MessageWindow /* implements TextWindow(予定)*/ = (function () {
-        function MessageWindow /* implements TextWindow(予定)*/(wwa, x, y, width, height, message, cgFileName, isVisible, isYesno, parentElement) {
+        function MessageWindow /* implements TextWindow(予定)*/(wwa, x, y, width, height, message, cgFileName, imgFileData, isVisible, isYesno, parentElement) {
             var thisA = this;
-            var escapedFilename = cgFileName.replace("(", "\\(").replace(")", "\\)");
+            var escapedFilename = imgFileData;
             this._wwa = wwa;
             this._cgFileName = cgFileName;
             this._x = x;
@@ -3287,7 +3288,7 @@ var wwa_main;
     }
     wwa_main.getProgress = getProgress;
     var WWA = (function () {
-        function WWA(mapFileName, workerFileName, urlgateEnabled, audioDirectory) {
+        function WWA(mapFileName, imgFileData, workerFileName, urlgateEnabled, audioDirectory) {
             var _this = this;
             if (urlgateEnabled === void 0) { urlgateEnabled = false; }
             if (audioDirectory === void 0) { audioDirectory = ""; }
@@ -3332,13 +3333,13 @@ var wwa_main;
                 _this.initCSSRule();
                 _this._setProgressBar(getProgress(0, 4, wwa_data.LoadStage.GAME_INIT));
                 var cgFile = new Image();
-                cgFile.src = _this._wwaData.mapCGName;
+                cgFile.src = imgFileData;
                 cgFile.addEventListener("error", function () {
                     alert("画像ファイル「" + _this._wwaData.mapCGName + "」が見つかりませんでした。\n" +
                         "管理者の方へ: データがアップロードされているか、パーミッションを確かめてください。");
                 });
                 _this._restartData = JSON.parse(JSON.stringify(_this._wwaData));
-                var escapedFilename = _this._wwaData.mapCGName.replace("(", "\\(").replace(")", "\\)");
+                var escapedFilename = imgFileData;
                 Array.prototype.forEach.call(util.$qsAll("div.item-cell"), function (node) {
                     node.style.backgroundPosition = "-40px -80px";
                     node.style.backgroundImage = "url(" + escapedFilename + ")";
@@ -3620,7 +3621,7 @@ var wwa_main;
                 _this._battleEffectCoord = new Coord(Consts.IMGPOS_DEFAULT_BATTLE_EFFECT_X, Consts.IMGPOS_DEFAULT_BATTLE_EFFECT_Y);
                 _this._battleEstimateWindow = new wwa_estimate_battle.BattleEstimateWindow(_this, _this._wwaData.mapCGName, wwa_util.$id("wwa-wrapper"));
                 _this._passwordWindow = new wwa_password_window.PasswordWindow(_this, wwa_util.$id("wwa-wrapper"));
-                _this._messageWindow = new wwa_message.MessageWindow(_this, 50, 180, 340, 0, "", _this._wwaData.mapCGName, false, true, util.$id("wwa-wrapper"));
+                _this._messageWindow = new wwa_message.MessageWindow(_this, 50, 180, 340, 0, "", _this._wwaData.mapCGName, imgFileData, false, true, util.$id("wwa-wrapper"));
                 _this._monsterWindow = new wwa_message.MosterWindow(_this, new Coord(50, 180), 340, 60, false, util.$id("wwa-wrapper"), _this._wwaData.mapCGName);
                 _this._scoreWindow = new wwa_message.ScoreWindow(_this, new Coord(50, 50), false, util.$id("wwa-wrapper"));
                 _this._setProgressBar(getProgress(3, 4, wwa_data.LoadStage.GAME_INIT));
@@ -3645,7 +3646,7 @@ var wwa_main;
                     }
                 }
                 */
-                _this._cgManager = new CGManager(ctx, ctxSub, _this._wwaData.mapCGName, function () {
+                _this._cgManager = new CGManager(ctx, ctxSub, _this._wwaData.mapCGName, imgFileData, function () {
                     if (_this._wwaData.systemMessage[wwa_data.SystemMessage2.LOAD_SE] === "ON") {
                         _this._isLoadedSound = true;
                         _this.setMessageQueue("ゲームを開始します。\n画面をクリックしてください。\n" +
@@ -3739,7 +3740,7 @@ var wwa_main;
                 try {
                     loader_start({
                         data: {
-                            fileName: mapFileName + "?date=" + t_start
+                            fileName: mapFileName
                         }
                     });
                 }
@@ -3747,7 +3748,7 @@ var wwa_main;
                     script.onload = function () {
                         loader_start({
                             data: {
-                                fileName: mapFileName + "?date=" + t_start
+                                fileName: mapFileName
                             }
                         });
                     };
@@ -3756,7 +3757,7 @@ var wwa_main;
             else {
                 try {
                     var loadWorker = new Worker(workerFileName + "?date=" + t_start);
-                    loadWorker.postMessage({ "fileName": mapFileName + "?date=" + t_start });
+                    loadWorker.postMessage({ "fileName": mapFileName });
                     loadWorker.addEventListener("message", this._loadHandler);
                 }
                 catch (e) {
@@ -6354,13 +6355,14 @@ var wwa_main;
             util.$id("wwa-wrapper").getAttribute("data-wwa-title-img");
         wwa_inject_html.inject(util.$id("wwa-wrapper"), titleImgName === null ? "cover.gif" : titleImgName);
         var mapFileName = util.$id("wwa-wrapper").getAttribute("data-wwa-mapdata");
+        var imgFileData = util.$id("wwa-wrapper").dataset["wwaImgdata"];
         var loaderFileName = util.$id("wwa-wrapper").getAttribute("data-wwa-loader");
         var audioDirectory = util.$id("wwa-wrapper").getAttribute("data-wwa-audio-dir");
         var urlgateEnabled = true;
         if (util.$id("wwa-wrapper").getAttribute("data-wwa-urlgate-enable").match(/^false$/i)) {
             urlgateEnabled = false;
         }
-        wwa = new WWA(mapFileName, loaderFileName, urlgateEnabled, audioDirectory);
+        wwa = new WWA(mapFileName, imgFileData, loaderFileName, urlgateEnabled, audioDirectory);
     }
     if (document.readyState === "complete") {
         start();
@@ -6369,5 +6371,4 @@ var wwa_main;
         window.addEventListener("load", start);
     }
 })(wwa_main || (wwa_main = {}));
-//# sourceMappingURL=wwa.long.js.tmp.map
-
+//# sourceMappingURL=wwa.long.js.tmp.map\n
